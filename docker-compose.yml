@@ -1,0 +1,14 @@
+---
+services:
+  rails:
+    volumes:
+      - .:/usr/src/app:cached
+      - bundle:/usr/local/bundle:cached
+  frontend:
+    volumes:
+      - .:/usr/src/app:cached
+      - yarn:/usr/local/yarn:cached
+
+volumes:
+  bundle:
+  yarn:
