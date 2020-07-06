@@ -2,7 +2,7 @@
 	"name": "go-fuse-sample",
 	"dockerComposeFile": [ "docker-compose.yml" ],
 	"service": "app",
-	"workspaceFolder": "/app",
+	"workspaceFolder": "/workspace",
 	"shutdownAction": "stopCompose",
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
