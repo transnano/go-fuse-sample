@@ -1,16 +1,14 @@
 {
 	"name": "go-fuse-sample",
-	"dockerComposeFile": [ "docker-compose.yml" ],
-	"service": "app",
-	"workspaceFolder": "/workspace",
-	"shutdownAction": "stopCompose",
+	"dockerFile": "Dockerfile",
+	"runArgs": [ "--cap-add=SYS_PTRACE", "--security-opt", "seccomp=unconfined" ],
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [9000],
 
 	// Use 'settings' to set *default* container specific settings.json values on container create. 
 	// You can edit these settings after create using File > Preferences > Settings > Remote.
-	"settings": {
+	"settings": { 
 		"terminal.integrated.shell.linux": "/bin/bash",
 		"go.gopath": "/go",
 		"go.inferGopath": true,
@@ -21,7 +19,7 @@
 	"extensions": [
 		"golang.Go"
 	],
-
+	
 	// Uncomment the next line to run commands after the container is created.
 	// "postCreateCommand": "go version",
 
