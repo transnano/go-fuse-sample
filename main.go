@@ -11,6 +11,7 @@ import (
 	"flag"
 	"log"
 	"syscall"
+	"time"
 
 	"github.com/hanwen/go-fuse/v2/fs"
 	"github.com/hanwen/go-fuse/v2/fuse"
@@ -25,7 +26,14 @@ func (r *HelloRoot) OnAdd(ctx context.Context) {
 		ctx, &fs.MemRegularFile{
 			Data: []byte("file.txt"),
 			Attr: fuse.Attr{
-				Mode: 0644,
+				Size:      100,
+				Mode:      0644,
+				Atime:     uint64(time.Now().Unix()),
+				Atimensec: uint32(time.Now().Nanosecond()),
+				Ctime:     uint64(time.Now().Unix()),
+				Ctimensec: uint32(time.Now().Nanosecond()),
+				Mtime:     uint64(time.Now().Unix()),
+				Mtimensec: uint32(time.Now().Nanosecond()),
 			},
 		}, fs.StableAttr{Ino: 2})
 	r.AddChild("file.txt", ch, false)

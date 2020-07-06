@@ -1,24 +1,9 @@
 # go-fuse-sample
 
-## Developed by Mac
-
-1. Virtual Box
-2. Vagrant
+## Developed by VSCode-Remote-Development-Containers
 
 ```sh
-$ brew cask install virtualbox
-$ brew cask install vagrant
-$ vagrant -v
-$ vagrant plugin install vagrant-disksize vagrant-hostsupdater vagrant-mutagen
-```
-
-## 
-
-```sh
-$ docker run --rm -it -v $(pwd):/go/src/github.com/transnano/go-fuse-sample/ -w /go/src/github.com/transnano/go-fuse-sample golang:1.14.4 bash
-
-docker run --rm -it -v $(pwd):/go/src/github.com/transnano/go-fuse-sample/ -w /go/src/github.com/transnano/go-fuse-sample golang:1.14.4 go build -o hello main.go
-
+# Open
 $ uname -a
 Linux 2edb5fdeab70 4.19.76-linuxkit #1 SMP Tue May 26 11:42:35 UTC 2020 x86_64 GNU/Linux
 $ uname -s
@@ -31,11 +16,37 @@ $ go env GOARCH
 amd64
 $ go build -o hello main.go
 
-$ docker run --rm -it ubuntu:18.04 bash
-fuse
+$ mkdir /tmp/mountpoint
+$ sudo ./hello /tmp/mountpoint &
+sudo ls -Fla /tmp/mountpoint
+# 上記コマンド実行時に以下のエラーが出る場合は、fusermountコマンドを実行
+#/bin/fusermount: failed to access mountpoint /tmp/mountpoint: Transport endpoint is not connected
+$ sudo fusermount -u /tmp/mountpoint
 ```
 
-## check
+## Developed by Mac
+
+1. Virtual Box
+2. Vagrant
+
+```sh
+$ brew cask install virtualbox
+$ brew cask install vagrant
+$ vagrant -v
+$ vagrant plugin install vagrant-disksize vagrant-hostsupdater vagrant-mutagen
+```
+
+## Docker for Mac
+
+### Build
+
+```sh
+$ docker run --rm -it -v $(pwd):/go/src/github.com/transnano/go-fuse-sample/ -w /go/src/github.com/transnano/go-fuse-sample golang:1.14.4 bash
+
+docker run --rm -it -v $(pwd):/go/src/github.com/transnano/go-fuse-sample/ -w /go/src/github.com/transnano/go-fuse-sample golang:1.14.4 go build -o hello main.go
+```
+
+### Check
 
 ```sh
 docker build -t go-fuse-sample:latest -f ./Dockerfile.check .

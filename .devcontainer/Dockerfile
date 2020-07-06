@@ -23,6 +23,9 @@ RUN apt-get update \
     # Verify git, process tools, lsb-release (common in install instructions for CLIs) installed
     && apt-get -y install git openssh-client less iproute2 procps lsb-release \
     #
+    # Check tools
+    && apt-get -y install libfuse-dev fuse \
+    #
     # Build Go tools w/module support
     && mkdir -p /tmp/gotools \
     && cd /tmp/gotools \
