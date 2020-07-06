@@ -19,6 +19,17 @@ $ docker run --rm -it -v $(pwd):/go/src/github.com/transnano/go-fuse-sample/ -w 
 
 docker run --rm -it -v $(pwd):/go/src/github.com/transnano/go-fuse-sample/ -w /go/src/github.com/transnano/go-fuse-sample golang:1.14.4 go build -o hello main.go
 
+$ uname -a
+Linux 2edb5fdeab70 4.19.76-linuxkit #1 SMP Tue May 26 11:42:35 UTC 2020 x86_64 GNU/Linux
+$ uname -s
+Linux
+$ uname -m
+x86_64
+$ go env GOOS
+linux
+$ go env GOARCH
+amd64
+$ go build -o hello main.go
 
 $ docker run --rm -it ubuntu:18.04 bash
 fuse
