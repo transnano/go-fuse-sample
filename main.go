@@ -57,8 +57,16 @@ func (r *HelloRoot) Getattr(ctx context.Context, fh fs.FileHandle, out *fuse.Att
 	return 0
 }
 
+func (r *HelloRoot) Lookup(ctx context.Context, name string, out *fuse.EntryOut) (*fs.Inode, syscall.Errno) {
+	logrus.Debugf("Lookup: %s - %v\n", name, r)
+	child := &fs.MemRegularFile{}
+	childNode := r.NewInode(ctx, child, fs.StableAttr{Mode: syscall.S_IFREG})
+	return childNode, fs.OK
+}
+
 var _ = (fs.NodeGetattrer)((*HelloRoot)(nil))
 var _ = (fs.NodeOnAdder)((*HelloRoot)(nil))
+var _ = (fs.NodeLookuper)((*HelloRoot)(nil))
 
 // bytesNode is a file that can be read and written
 type bytesNode struct {
