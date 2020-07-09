@@ -87,12 +87,13 @@ user_allow_other
 
 $ mkdir /tmp/mountpoint
 $ sudo ./hello /tmp/mountpoint &
-sudo ls -Fla /tmp/mountpoint &
-sudo cat /tmp/mountpoint/file.txt
+$ sudo ls -Fla /tmp/mountpoint
+# This file is read-only
+$ sudo cat /tmp/mountpoint/read-only-file.txt
 
 $ sudo ./hello /tmp/mountpoint &
-sudo echo google >> /tmp/mountpoint/file.txt
-bash: /tmp/mountpoint/file.txt: Permission denied
+$ sudo echo google >> /tmp/mountpoint/writable-file.txt
+bash: /tmp/mountpoint/writable-file.txt: Permission denied
 
 # 上記コマンド実行時に以下のエラーが出る場合は、fusermountコマンドを実行
 #/bin/fusermount: failed to access mountpoint /tmp/mountpoint: Transport endpoint is not connected
