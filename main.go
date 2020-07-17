@@ -1,14 +1,13 @@
-// Copyright 2016 the Go-FUSE Authors. All rights reserved.
+// Copyright 2019 the Go-FUSE Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// This program is the analogon of libfuse's hello.c, a a program that
-// exposes a single file "file.txt" in the root directory.
 package main
 
 import (
 	"context"
 	"flag"
+	"fmt"
 	"os"
 	"sync"
 	"syscall"
@@ -18,55 +17,6 @@ import (
 	"github.com/hanwen/go-fuse/v2/fuse"
 	"github.com/sirupsen/logrus"
 )
-
-type HelloRoot struct {
-	fs.Inode
-}
-
-func (r *HelloRoot) OnAdd(ctx context.Context) {
-	ch := r.NewPersistentInode(
-		ctx, &fs.MemRegularFile{
-			Data: []byte("foobar"),
-			Attr: fuse.Attr{
-				Size:      100,
-				Mode:      0644,
-				Atime:     uint64(time.Now().Unix()),
-				Atimensec: uint32(time.Now().Nanosecond()),
-				Ctime:     uint64(time.Now().Unix()),
-				Ctimensec: uint32(time.Now().Nanosecond()),
-				Mtime:     uint64(time.Now().Unix()),
-				Mtimensec: uint32(time.Now().Nanosecond()),
-			},
-		}, fs.StableAttr{Ino: 2})
-	r.AddChild("read-only-file.txt", ch, false)
-
-	node := r.NewPersistentInode(
-		ctx, &bytesNode{},
-		fs.StableAttr{
-			Mode: syscall.S_IFREG,
-			// Make debug output readable.
-			Ino: 2,
-		})
-	r.AddChild("writable-file.txt", node, true)
-
-}
-
-func (r *HelloRoot) Getattr(ctx context.Context, fh fs.FileHandle, out *fuse.AttrOut) syscall.Errno {
-	out.Mode = 0755
-	logrus.Debugf("Getattr: %v - %v\n", fh, r)
-	return 0
-}
-
-func (r *HelloRoot) Lookup(ctx context.Context, name string, out *fuse.EntryOut) (*fs.Inode, syscall.Errno) {
-	logrus.Debugf("Lookup: %s - %v\n", name, r)
-	child := &fs.MemRegularFile{}
-	childNode := r.NewInode(ctx, child, fs.StableAttr{Mode: syscall.S_IFREG})
-	return childNode, fs.OK
-}
-
-var _ = (fs.NodeGetattrer)((*HelloRoot)(nil))
-var _ = (fs.NodeOnAdder)((*HelloRoot)(nil))
-var _ = (fs.NodeLookuper)((*HelloRoot)(nil))
 
 // bytesNode is a file that can be read and written
 type bytesNode struct {
@@ -83,9 +33,9 @@ type bytesNode struct {
 var _ = (fs.NodeGetattrer)((*bytesNode)(nil))
 
 func (bn *bytesNode) Getattr(ctx context.Context, fh fs.FileHandle, out *fuse.AttrOut) syscall.Errno {
+	logrus.Infof("Getattr: %v", fh)
 	bn.mu.Lock()
 	defer bn.mu.Unlock()
-	logrus.Debugf("Getattr: %v - %v\n", fh, bn)
 	bn.getattr(out)
 	return 0
 }
@@ -112,7 +62,6 @@ var _ = (fs.NodeSetattrer)((*bytesNode)(nil))
 func (bn *bytesNode) Setattr(ctx context.Context, fh fs.FileHandle, in *fuse.SetAttrIn, out *fuse.AttrOut) syscall.Errno {
 	bn.mu.Lock()
 	defer bn.mu.Unlock()
-	logrus.Debugf("Setattr: %v - %v\n", fh, bn)
 
 	if sz, ok := in.GetSize(); ok {
 		bn.resize(sz)
@@ -125,9 +74,9 @@ func (bn *bytesNode) Setattr(ctx context.Context, fh fs.FileHandle, in *fuse.Set
 var _ = (fs.NodeReader)((*bytesNode)(nil))
 
 func (bn *bytesNode) Read(ctx context.Context, fh fs.FileHandle, dest []byte, off int64) (fuse.ReadResult, syscall.Errno) {
+	logrus.Infof("Read: %s, %d", string(dest), off)
 	bn.mu.Lock()
 	defer bn.mu.Unlock()
-	logrus.Debugf("Read: %v - %v\n", fh, bn)
 
 	end := off + int64(len(dest))
 	if end > int64(len(bn.content)) {
@@ -143,9 +92,16 @@ func (bn *bytesNode) Read(ctx context.Context, fh fs.FileHandle, dest []byte, of
 var _ = (fs.NodeWriter)((*bytesNode)(nil))
 
 func (bn *bytesNode) Write(ctx context.Context, fh fs.FileHandle, buf []byte, off int64) (uint32, syscall.Errno) {
-	sz := int64(len(buf))
+	logrus.Infof("Write: %s, %d", string(buf), off)
+	bn.mu.Lock()
+	defer bn.mu.Unlock()
 
-	logrus.Infof("Write: %s :: %v\n", string(buf), off)
+	sz := int64(len(buf))
+	if off+sz > int64(len(bn.content)) {
+		bn.resize(uint64(off + sz))
+	}
+	copy(bn.content[off:], buf)
+	bn.mtime = time.Now()
 	return uint32(sz), 0
 }
 
@@ -153,6 +109,7 @@ func (bn *bytesNode) Write(ctx context.Context, fh fs.FileHandle, buf []byte, of
 var _ = (fs.NodeOpener)((*bytesNode)(nil))
 
 func (f *bytesNode) Open(ctx context.Context, openFlags uint32) (fh fs.FileHandle, fuseFlags uint32, errno syscall.Errno) {
+	logrus.Infof("Open: %v", openFlags)
 	return nil, 0, 0
 }
 
@@ -174,11 +131,41 @@ func main() {
 	if len(flag.Args()) < 1 {
 		logrus.Fatal("Usage:\n  hello MOUNTPOINT")
 	}
-	opts := &fs.Options{}
-	opts.Debug = *debug
-	server, err := fs.Mount(flag.Arg(0), &HelloRoot{}, opts)
+	root := &fs.Inode{}
+
+	// Mount the file system
+	server, err := fs.Mount(flag.Arg(0), root, &fs.Options{
+		MountOptions: fuse.MountOptions{
+			Debug:      *debug,
+			AllowOther: true,
+		},
+
+		// Setup the file.
+		OnAdd: func(ctx context.Context) {
+			ch := root.NewPersistentInode(
+				ctx,
+				&bytesNode{},
+				fs.StableAttr{
+					Mode: syscall.S_IFREG,
+					// Make debug output readable.
+					Ino: 2,
+				})
+			root.AddChild("bytes", ch, true)
+		},
+	})
 	if err != nil {
-		logrus.Fatalf("Mount fail: %v\n", err)
+		logrus.Fatal(err)
 	}
+	fmt.Printf(`Try:
+
+  sudo ls -l %s/bytes
+  sudo sh -c "echo 'hello' > %s/bytes"
+  sudo ls -l %s/bytes
+  sudo cat %s/bytes
+
+`, flag.Arg(0))
+	fmt.Printf("Unmount by calling 'sudo fusermount -u %s'\n", flag.Arg(0))
+
+	// Serve the file system, until unmounted by calling fusermount -u
 	server.Wait()
 }
