@@ -1,4 +1,4 @@
-FROM golang:1.14.6
+FROM golang:1.14.7
 LABEL maintainer "[my name]"
 WORKDIR /go/src
 ENV GO111MODULE=on
