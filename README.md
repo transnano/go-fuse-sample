@@ -1,4 +1,4 @@
-# go-fuse-sample
+# go-fuse-sample ![Haskell Dockerfile Linter](https://github.com/transnano/go-fuse-sample/workflows/Haskell%20Dockerfile%20Linter/badge.svg) ![Code Scanning(CodeQL)](https://github.com/transnano/go-fuse-sample/workflows/Code%20Scanning(CodeQL)/badge.svg)
 
 ## 
 
