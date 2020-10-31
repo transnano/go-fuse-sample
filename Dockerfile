@@ -1,5 +1,5 @@
 FROM golang:1.15.3
-LABEL maintainer "[my name]"
+LABEL maintainer="Transnano <transnano.jp@gmail.com>"
 WORKDIR /go/src
 ENV GO111MODULE=on
 RUN go mod download
