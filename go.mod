@@ -1,6 +1,6 @@
 module github.com/transnano/go-fuse-sample
 
-go 1.18
+go 1.19
 
 require (
 	github.com/hanwen/go-fuse/v2 v2.1.0
