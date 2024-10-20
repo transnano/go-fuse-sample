@@ -3,7 +3,7 @@ module github.com/transnano/go-fuse-sample
 go 1.19
 
 require (
-	github.com/hanwen/go-fuse/v2 v2.6.1
+	github.com/hanwen/go-fuse/v2 v2.6.2
 	github.com/sirupsen/logrus v1.9.3
 )
 
