@@ -1,4 +1,4 @@
-FROM golang:1.23.3
+FROM golang:1.23.4
 LABEL maintainer="Transnano <transnano.jp@gmail.com>"
 WORKDIR /go/src
 ENV GO111MODULE=on
