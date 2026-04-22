@@ -1,9 +1,9 @@
 module github.com/transnano/go-fuse-sample
 
-go 1.19
+go 1.21
 
 require (
-	github.com/hanwen/go-fuse/v2 v2.9.0
+	github.com/hanwen/go-fuse/v2 v2.10.1
 	github.com/sirupsen/logrus v1.9.4
 )
 
