@@ -1,10 +1,10 @@
 module github.com/transnano/go-fuse-sample
 
-go 1.21
+go 1.23
 
 require (
 	github.com/hanwen/go-fuse/v2 v2.11.0
-	github.com/sirupsen/logrus v1.9.4
+	github.com/sirupsen/logrus v1.10.0
 )
 
 require golang.org/x/sys v0.28.0 // indirect
