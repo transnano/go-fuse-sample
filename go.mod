@@ -3,7 +3,7 @@ module github.com/transnano/go-fuse-sample
 go 1.23
 
 require (
-	github.com/hanwen/go-fuse/v2 v2.12.0
+	github.com/hanwen/go-fuse/v2 v2.12.1
 	github.com/sirupsen/logrus v1.10.2
 )
 
